@@ -149,20 +149,12 @@ module.exports = function (app, options) {
           if (languages.length > 0) {
             for (let i = 0; i < languages.length; i++) {
               var lang = formatLocale(languages[i]);
-              var match = false
-              while (true) {
-                if (resources[lang]) {
-                  match = true
-                  locale = lang;
-                  break;
-                }
+              var loc = bestLocaleMatch(resources, lang)
 
-                let lastIndex = lang.lastIndexOf('-');
-                if (lastIndex < 0) break;
-
-                lang = lang.substr(0, lang.lastIndexOf('-'))
+              if (!!loc) {
+                locale = lang;
+                break;
               }
-              if (match) break;
             }
             if (!locale) {
               // set the first one
@@ -183,7 +175,8 @@ module.exports = function (app, options) {
     locale = formatLocale(locale);
 
     // validate locale
-    if (!resources[locale]) {
+    locale = bestLocaleMatch(resources, locale);
+    if (!locale) {
       locale = defaultLocale;
     }
 
@@ -199,6 +192,24 @@ module.exports = function (app, options) {
     return locale;
   };
 };
+
+function bestLocaleMatch(resources, lang) {
+  var locale = null;
+
+  while (true) {
+    if (resources[lang]) {
+      locale = lang;
+      break;
+    }
+
+    let lastIndex = lang.lastIndexOf('-');
+    if (lastIndex < 0) break;
+
+    lang = lang.substr(0, lang.lastIndexOf('-'))
+  }
+
+  return locale;
+}
 
 function isObject(obj) {
   return Object.prototype.toString.call(obj) === '[object Object]';
